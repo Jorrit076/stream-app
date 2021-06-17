@@ -1,4 +1,4 @@
-package com.pedro.rtmp.utils
+package com.avans.rtmp.utils
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

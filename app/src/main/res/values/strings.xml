@@ -1,22 +1,9 @@
 <resources>
-  <string name="app_name">RTMP-RTSP Streamer</string>
+  <string name="app_name">Circle stream</string>
   <string name="version">Version: %1$s</string>
 
-  <string name="rtsp_streamer">Custom RTSP</string>
-  <string name="rtmp_streamer">Custom RTMP</string>
-  <string name="default_rtmp">Default RTMP</string>
-  <string name="default_rtsp">Default RTSP</string>
-  <string name="from_file_rtsp">From file RTSP</string>
-  <string name="from_file_rtmp">From file RTMP</string>
-  <string name="surface_mode_rtsp">Surface mode RTSP</string>
-  <string name="surface_mode_rtmp">Surface mode RTMP</string>
-  <string name="texture_mode_rtsp">Texture mode RTSP</string>
-  <string name="texture_mode_rtmp">Texture mode RTMP</string>
-  <string name="display_rtmp">Display RTMP or RTSP</string>
-  <string name="opengl_rtmp">OpenGl RTMP</string>
-  <string name="opengl_rtsp">OpenGl RTSP</string>
-  <string name="service_rtp">Service RTP</string>
-  <string name="cube_test_rtmp">Cube test RTMP</string>
+
+  <string name="default_rtmp">Circle stream</string>
 
   <string name="tv_select">Select your streamer</string>
   <string name="hint_rtsp">rtsp://yourendpoint</string>

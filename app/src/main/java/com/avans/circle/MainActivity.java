@@ -1,5 +1,6 @@
 package com.avans.circle;
 
+import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity
 
   private RtmpCamera1 rtmpCamera1;
   private Button button;
+  public static Context context;
+
 
 
   @Override
@@ -43,6 +46,7 @@ public class MainActivity extends AppCompatActivity
     rtmpCamera1 = new RtmpCamera1(surfaceView, this);
     rtmpCamera1.setReTries(10);
     surfaceView.getHolder().addCallback(this);
+    context = this.getBaseContext();
   }
 
   @Override

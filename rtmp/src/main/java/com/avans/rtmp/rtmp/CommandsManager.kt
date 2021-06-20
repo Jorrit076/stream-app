@@ -1,10 +1,13 @@
 package com.avans.rtmp.rtmp
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.avans.rtmp.amf.v0.*
 import com.avans.rtmp.flv.FlvPacket
 import com.avans.rtmp.rtmp.chunk.ChunkStreamId
 import com.avans.rtmp.rtmp.chunk.ChunkType
+import com.avans.rtmp.rtmp.digisign.StreamSigner
 import com.avans.rtmp.rtmp.message.*
 import com.avans.rtmp.rtmp.message.command.CommandAmf0
 import com.avans.rtmp.rtmp.message.control.Event
@@ -92,7 +95,8 @@ class CommandsManager {
 
   @Throws(IOException::class)
   fun createStream(output: OutputStream) {
-    val releaseStream = CommandAmf0("releaseStream", ++commandId, getCurrentTimestamp(), streamId,
+    val currentTimeStamp = getCurrentTimestamp();
+    val releaseStream = CommandAmf0("releaseStream", ++commandId, currentTimeStamp, streamId,
         BasicHeader(ChunkType.TYPE_0, ChunkStreamId.OVER_STREAM))
     releaseStream.addData(AmfNull())
     releaseStream.addData(AmfString(streamName))
@@ -102,7 +106,8 @@ class CommandsManager {
     sessionHistory.setPacket(commandId, "releaseStream")
     Log.i(TAG, "send $releaseStream")
 
-    val fcPublish = CommandAmf0("FCPublish", ++commandId, getCurrentTimestamp(), streamId,
+
+    val fcPublish = CommandAmf0("FCPublish", ++commandId, currentTimeStamp, streamId,
         BasicHeader(ChunkType.TYPE_0, ChunkStreamId.OVER_STREAM))
     fcPublish.addData(AmfNull())
     fcPublish.addData(AmfString(streamName))
@@ -112,7 +117,8 @@ class CommandsManager {
     sessionHistory.setPacket(commandId, "FCPublish")
     Log.i(TAG, "send $fcPublish")
 
-    val createStream = CommandAmf0("createStream", ++commandId, getCurrentTimestamp(), streamId,
+
+    val createStream = CommandAmf0("createStream", ++commandId, currentTimeStamp, streamId,
         BasicHeader(ChunkType.TYPE_0, ChunkStreamId.OVER_CONNECTION))
     createStream.addData(AmfNull())
 
@@ -203,12 +209,18 @@ class CommandsManager {
     Log.i(TAG, "send $closeStream")
   }
 
+  @RequiresApi(Build.VERSION_CODES.O)
   @Throws(IOException::class)
   fun sendVideoPacket(flvPacket: FlvPacket, output: OutputStream): Int {
+    val timestamp = ((System.nanoTime() / 1000 - startTs) / 1000);
     if (akamaiTs) {
-      flvPacket.timeStamp = ((System.nanoTime() / 1000 - startTs) / 1000)
+      flvPacket.timeStamp = timestamp;
     }
     val video = Video(flvPacket, streamId)
+
+    StreamSigner.DataGenerator(user, timestamp, flvPacket);
+
+
     video.writeHeader(output)
     video.writeBody(output)
     output.flush()

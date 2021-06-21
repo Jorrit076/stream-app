@@ -1,5 +1,6 @@
 package com.avans.rtplibrary.rtmp;
 
+import android.content.Context;
 import android.media.MediaCodec;
 
 import androidx.annotation.Nullable;
@@ -97,8 +98,8 @@ public class RtmpOnlyAudio extends OnlyAudioBase {
   }
 
   @Override
-  protected void startStreamRtp(String url) {
-    rtmpClient.connect(url);
+  protected void startStreamRtp(String url, Context context, String name) {
+    rtmpClient.connect(url, context, name);
   }
 
   @Override
@@ -117,8 +118,8 @@ public class RtmpOnlyAudio extends OnlyAudioBase {
   }
 
   @Override
-  public void reConnect(long delay, @Nullable String backupUrl) {
-    rtmpClient.reConnect(delay, backupUrl);
+  public void reConnect(long delay, @Nullable String backupUrl, Context context, String name) {
+    rtmpClient.reConnect(delay, backupUrl, context, name);
   }
 
   @Override

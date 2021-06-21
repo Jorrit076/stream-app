@@ -1,10 +1,13 @@
 package com.avans.rtmp.rtmp
 
+import android.content.Context
 import android.media.MediaCodec
+import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.avans.rtmp.amf.v0.AmfNumber
 import com.avans.rtmp.amf.v0.AmfObject
 import com.avans.rtmp.amf.v0.AmfString
@@ -106,13 +109,14 @@ class RtmpClient(private val connectCheckerRtmp: ConnectCheckerRtmp) {
     commandsManager.setVideoResolution(width, height)
   }
 
+  @RequiresApi(Build.VERSION_CODES.O)
   @JvmOverloads
-  fun connect(url: String?, isRetry: Boolean = false) {
+  fun connect(url: String?, isRetry: Boolean = false, context: Context, name: String) {
     if (!isRetry) doingRetry = true
     if (url == null) {
       isStreaming = false
       connectCheckerRtmp.onConnectionFailedRtmp(
-          "Endpoint malformed, should be: rtmp://ip:port/appname/streamname")
+          "Endpoint malformed, should be: rtmp://ip:port/appname/streamname", context, name)
       return
     }
     if (!isStreaming || isRetry) {
@@ -123,7 +127,7 @@ class RtmpClient(private val connectCheckerRtmp: ConnectCheckerRtmp) {
         tlsEnabled = (rtmpMatcher.group(0) ?: "").startsWith("rtmps")
       } else {
         connectCheckerRtmp.onConnectionFailedRtmp(
-            "Endpoint malformed, should be: rtmp://ip:port/appname/streamname")
+            "Endpoint malformed, should be: rtmp://ip:port/appname/streamname", context, name)
         return
       }
 
@@ -144,7 +148,7 @@ class RtmpClient(private val connectCheckerRtmp: ConnectCheckerRtmp) {
         h.post {
           try {
             if (!establishConnection()) {
-              connectCheckerRtmp.onConnectionFailedRtmp("Handshake failed")
+              connectCheckerRtmp.onConnectionFailedRtmp("Handshake failed", context, name)
               return@post
             }
             val writer = this.writer ?: throw IOException("Invalid writer, Connection failed")
@@ -152,13 +156,13 @@ class RtmpClient(private val connectCheckerRtmp: ConnectCheckerRtmp) {
             //read packets until you did success connection to server and you are ready to send packets
             while (!Thread.interrupted() && !publishPermitted) {
               //Handle all command received and send response for it.
-              handleMessages()
+              handleMessages(context, name)
             }
             //read packet because maybe server want send you something while streaming
-            handleServerPackets()
+            handleServerPackets(context, name)
           } catch (e: Exception) {
             Log.e(TAG, "connection error", e)
-            connectCheckerRtmp.onConnectionFailedRtmp("Error configure stream, ${e.message}")
+            connectCheckerRtmp.onConnectionFailedRtmp("Error configure stream, ${e.message}", context, name)
             return@post
           }
         }
@@ -166,10 +170,11 @@ class RtmpClient(private val connectCheckerRtmp: ConnectCheckerRtmp) {
     }
   }
 
-  private fun handleServerPackets() {
+  @RequiresApi(Build.VERSION_CODES.O)
+  private fun handleServerPackets(context: Context, name: String) {
     try {
       while (!Thread.interrupted()) {
-        handleMessages()
+        handleMessages(context, name)
       }
     } catch (e: InterruptedException) {
       Thread.currentThread().interrupt()
@@ -227,8 +232,9 @@ class RtmpClient(private val connectCheckerRtmp: ConnectCheckerRtmp) {
   /**
    * Read all messages from server and response to it
    */
+  @RequiresApi(Build.VERSION_CODES.O)
   @Throws(IOException::class)
-  private fun handleMessages() {
+  private fun handleMessages(context: Context, name: String) {
     val reader = this.reader ?: throw IOException("Invalid reader, Connection failed")
     var writer = this.writer ?: throw IOException("Invalid writer, Connection failed")
 
@@ -334,7 +340,7 @@ class RtmpClient(private val connectCheckerRtmp: ConnectCheckerRtmp) {
                   }
                 }
                 else -> {
-                  connectCheckerRtmp.onConnectionFailedRtmp(description)
+                  connectCheckerRtmp.onConnectionFailedRtmp(description, context, name)
                 }
               }
             } catch (e: ClassCastException) {
@@ -349,11 +355,11 @@ class RtmpClient(private val connectCheckerRtmp: ConnectCheckerRtmp) {
                   connectCheckerRtmp.onConnectionSuccessRtmp()
 
                   rtmpSender.output = writer
-                  rtmpSender.start()
+                  rtmpSender.start(context, name)
                   publishPermitted = true
                 }
                 "NetConnection.Connect.Rejected", "NetStream.Publish.BadName" -> {
-                  connectCheckerRtmp.onConnectionFailedRtmp("onStatus: $code")
+                  connectCheckerRtmp.onConnectionFailedRtmp("onStatus: $code", context, name)
                 }
                 else -> {
                   Log.i(TAG, "onStatus $code response received from ${commandName ?: "unknown command"}")
@@ -380,13 +386,14 @@ class RtmpClient(private val connectCheckerRtmp: ConnectCheckerRtmp) {
     commandsManager.reset()
   }
 
+  @RequiresApi(Build.VERSION_CODES.O)
   @JvmOverloads
-  fun reConnect(delay: Long, backupUrl: String? = null) {
+  fun reConnect(delay: Long, backupUrl: String? = null, context: Context, name: String) {
     reTries--
     disconnect(false)
     runnable = Runnable {
       val reconnectUrl = backupUrl ?: url
-      connect(reconnectUrl, true)
+      connect(reconnectUrl, true, context, name)
     }
     runnable?.let { handler.postDelayed(it, delay) }
   }

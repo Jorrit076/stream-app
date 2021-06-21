@@ -1,5 +1,6 @@
 package com.avans.rtmp.rtmp
 
+import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -17,6 +18,9 @@ import com.avans.rtmp.rtmp.message.data.DataAmf0
 import com.avans.rtmp.utils.CommandSessionHistory
 import com.avans.rtmp.utils.RtmpConfig
 import java.io.*
+import java.net.HttpURLConnection
+import java.net.URL
+
 
 /**
  * Created by pedro on 21/04/21.
@@ -41,6 +45,7 @@ class CommandsManager {
   var startTs = 0L
   var readChunkSize = 128
   var isOnlyAudio = false
+  var countFrames = 0
 
   private var width = 640
   private var height = 480
@@ -211,19 +216,28 @@ class CommandsManager {
 
   @RequiresApi(Build.VERSION_CODES.O)
   @Throws(IOException::class)
-  fun sendVideoPacket(flvPacket: FlvPacket, output: OutputStream): Int {
+  fun sendVideoPacket(flvPacket: FlvPacket, output: OutputStream, context: Context, name: String): Int {
     val timestamp = ((System.nanoTime() / 1000 - startTs) / 1000);
     if (akamaiTs) {
       flvPacket.timeStamp = timestamp;
     }
     val video = Video(flvPacket, streamId)
 
-    StreamSigner.DataGenerator(user, timestamp, flvPacket);
+
+
+    val flvPacketString = flvPacket.toString();
+    countFrames++
+    if(countFrames > 60) {
+      countFrames = 0;
+      StreamSigner.DataGenerator(name, timestamp, flvPacketString, context);
+      println("Sent stream signer");
+    }
 
 
     video.writeHeader(output)
     video.writeBody(output)
     output.flush()
+
     return video.header.getPacketLength() //get packet size with header included to calculate bps
   }
 

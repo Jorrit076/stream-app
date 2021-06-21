@@ -528,17 +528,17 @@ public abstract class Camera1Base
   }
 
   @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-  public void startStreamAndRecord(String url, String path, RecordController.Listener listener) throws IOException {
-    startStream(url);
+  public void startStreamAndRecord(String url, String path, RecordController.Listener listener, Context context, String name) throws IOException {
+    startStream(url, context, name);
     recordController.startRecord(path, listener);
   }
 
   @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-  public void startStreamAndRecord(String url, String path) throws IOException {
-    startStreamAndRecord(url, path, null);
+  public void startStreamAndRecord(String url, String path, Context context, String name) throws IOException {
+    startStreamAndRecord(url, path, null, context, name);
   }
 
-  protected abstract void startStreamRtp(String url);
+  protected abstract void startStreamRtp(String url, Context context, String name);
 
   /**
    * Need be called after @prepareVideo or/and @prepareAudio. This method override resolution of
@@ -550,14 +550,14 @@ public abstract class Camera1Base
    * @startPreview to resolution seated in @prepareVideo. If you never startPreview this method
    * startPreview for you to resolution seated in @prepareVideo.
    */
-  public void startStream(String url) {
+  public void startStream(String url, Context context, String name) {
     streaming = true;
     if (!recordController.isRunning()) {
       startEncoders();
     } else {
       requestKeyFrame();
     }
-    startStreamRtp(url);
+    startStreamRtp(url, context, name);
     onPreview = true;
   }
 
@@ -639,24 +639,24 @@ public abstract class Camera1Base
    * if you'd like to connect to your backup server instead of the original one.
    * Given backupUrl replaces the original one.
    */
-  public boolean reTry(long delay, String reason, @Nullable String backupUrl) {
+  public boolean reTry(long delay, String reason, @Nullable String backupUrl, Context context, String name) {
     boolean result = shouldRetry(reason);
     if (result) {
       requestKeyFrame();
-      reConnect(delay, backupUrl);
+      reConnect(delay, backupUrl, context, name);
     }
     return result;
   }
 
-  public boolean reTry(long delay, String reason) {
-    return reTry(delay, reason, null);
+  public boolean reTry(long delay, String reason, Context context, String name) {
+    return reTry(delay, reason, null, context, name);
   }
 
   protected abstract boolean shouldRetry(String reason);
 
   public abstract void setReTries(int reTries);
 
-  protected abstract void reConnect(long delay, @Nullable String backupUrl);
+  protected abstract void reConnect(long delay, @Nullable String backupUrl, Context context, String name);
 
   //cache control
   public abstract boolean hasCongestion();

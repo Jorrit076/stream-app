@@ -1,5 +1,6 @@
 package com.avans.rtplibrary.base;
 
+import android.content.Context;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.media.MediaRecorder;
@@ -168,7 +169,7 @@ public abstract class OnlyAudioBase implements GetAacData, GetMicrophoneData {
     if (!streaming) stopStream();
   }
 
-  protected abstract void startStreamRtp(String url);
+  protected abstract void startStreamRtp(String url, Context context, String name);
 
   /**
    * Need be called after @prepareVideo or/and @prepareAudio.
@@ -181,12 +182,12 @@ public abstract class OnlyAudioBase implements GetAacData, GetMicrophoneData {
    * RTMP: rtmp://192.168.1.1:1935/live/pedroSG94
    * RTMPS: rtmps://192.168.1.1:1935/live/pedroSG94
    */
-  public void startStream(String url) {
+  public void startStream(String url, Context context, String name) {
     streaming = true;
     if (!recordController.isRunning()) {
       startEncoders();
     }
-    startStreamRtp(url);
+    startStreamRtp(url, context, name);
   }
 
   /**
@@ -235,23 +236,23 @@ public abstract class OnlyAudioBase implements GetAacData, GetMicrophoneData {
    * if you'd like to connect to your backup server instead of the original one.
    * Given backupUrl replaces the original one.
    */
-  public boolean reTry(long delay, String reason, @Nullable String backupUrl) {
+  public boolean reTry(long delay, String reason, @Nullable String backupUrl, Context context, String name) {
     boolean result = shouldRetry(reason);
     if (result) {
-      reConnect(delay, backupUrl);
+      reConnect(delay, backupUrl, context, name);
     }
     return result;
   }
 
-  public boolean reTry(long delay, String reason) {
-    return reTry(delay, reason, null);
+  public boolean reTry(long delay, String reason, Context context, String name) {
+    return reTry(delay, reason, null, context, name);
   }
 
   protected abstract boolean shouldRetry(String reason);
 
   public abstract void setReTries(int reTries);
 
-  protected abstract void reConnect(long delay, @Nullable String backupUrl);
+  protected abstract void reConnect(long delay, @Nullable String backupUrl, Context context, String name);
 
   //cache control
   public abstract boolean hasCongestion();

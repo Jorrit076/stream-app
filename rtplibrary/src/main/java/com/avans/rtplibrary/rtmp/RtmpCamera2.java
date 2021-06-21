@@ -147,14 +147,15 @@ public class RtmpCamera2 extends Camera2Base {
     rtmpClient.setAudioInfo(sampleRate, isStereo);
   }
 
+  @RequiresApi(api = Build.VERSION_CODES.O)
   @Override
-  protected void startStreamRtp(String url) {
+  protected void startStreamRtp(String url, Context context, String name) {
     if (videoEncoder.getRotation() == 90 || videoEncoder.getRotation() == 270) {
       rtmpClient.setVideoResolution(videoEncoder.getHeight(), videoEncoder.getWidth());
     } else {
       rtmpClient.setVideoResolution(videoEncoder.getWidth(), videoEncoder.getHeight());
     }
-    rtmpClient.connect(url);
+    rtmpClient.connect(url, context, name);
   }
 
   @Override
@@ -172,9 +173,10 @@ public class RtmpCamera2 extends Camera2Base {
     return rtmpClient.shouldRetry(reason);
   }
 
+  @RequiresApi(api = Build.VERSION_CODES.O)
   @Override
-  public void reConnect(long delay, @Nullable String backupUrl) {
-    rtmpClient.reConnect(delay, backupUrl);
+  public void reConnect(long delay, @Nullable String backupUrl, Context context, String name) {
+    rtmpClient.reConnect(delay, backupUrl, context, name);
   }
 
   @Override

@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity
   private RtmpCamera1 rtmpCamera1;
   private Button button;
   public static Context context;
+  private EditText name;
 
 
 
@@ -43,6 +44,8 @@ public class MainActivity extends AppCompatActivity
     button.setOnClickListener(this);
     Button switchCamera = findViewById(R.id.switch_camera);
     switchCamera.setOnClickListener(this);
+    name = findViewById(R.id.name);
+    name.setHint(R.string.name);
     rtmpCamera1 = new RtmpCamera1(surfaceView, this);
     rtmpCamera1.setReTries(10);
     surfaceView.getHolder().addCallback(this);
@@ -64,11 +67,11 @@ public class MainActivity extends AppCompatActivity
   }
 
   @Override
-  public void onConnectionFailedRtmp(final String reason) {
+  public void onConnectionFailedRtmp(final String reason, Context context, String name) {
     runOnUiThread(new Runnable() {
       @Override
       public void run() {
-        if (rtmpCamera1.reTry(5000, reason)) {
+        if (rtmpCamera1.reTry(5000, reason, context, name)) {
           Toast.makeText(MainActivity.this, "Retry", Toast.LENGTH_SHORT)
                   .show();
         } else {
@@ -124,7 +127,7 @@ public class MainActivity extends AppCompatActivity
           if (rtmpCamera1.isRecording()
                   || rtmpCamera1.prepareAudio() && rtmpCamera1.prepareVideo()) {
             button.setText(R.string.stop_button);
-            rtmpCamera1.startStream("rtmp://128.199.58.122/live/STREAM_NAME");
+            rtmpCamera1.startStream("rtmp://128.199.58.122/live/" + name.getText().toString(), this, name.getText().toString());
           } else {
             Toast.makeText(this, "Error preparing stream, This device cant do it",
                     Toast.LENGTH_SHORT).show();

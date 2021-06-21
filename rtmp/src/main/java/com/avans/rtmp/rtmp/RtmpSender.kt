@@ -1,9 +1,12 @@
 package com.avans.rtmp.rtmp
 
+import android.content.Context
 import android.media.MediaCodec
+import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.avans.rtmp.flv.FlvPacket
 import com.avans.rtmp.flv.FlvType
 import com.avans.rtmp.flv.audio.AacPacket
@@ -84,7 +87,8 @@ class RtmpSender(private val connectCheckerRtmp: ConnectCheckerRtmp, private val
       }
     }
 
-    fun start() {
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun start(context: Context, name: String) {
       thread = HandlerThread(TAG)
       thread?.start()
       thread?.let {
@@ -102,7 +106,7 @@ class RtmpSender(private val connectCheckerRtmp: ConnectCheckerRtmp, private val
               if (flvPacket.type == FlvType.VIDEO) {
                 videoFramesSent++
                 output?.let { output ->
-                  size = commandsManager.sendVideoPacket(flvPacket, output)
+                  size = commandsManager.sendVideoPacket(flvPacket, output, context, name)
                   if (isEnableLogs) {
                     Log.i(TAG, "wrote Video packet, size $size")
                   }
@@ -121,7 +125,7 @@ class RtmpSender(private val connectCheckerRtmp: ConnectCheckerRtmp, private val
             } catch (e: Exception) {
               //InterruptedException is only when you disconnect manually, you don't need report it.
               if (e !is InterruptedException) {
-                connectCheckerRtmp.onConnectionFailedRtmp("Error send packet, " + e.message)
+                connectCheckerRtmp.onConnectionFailedRtmp("Error send packet, " + e.message, context, name)
                 Log.e(TAG, "send error: ", e)
               }
               return@post

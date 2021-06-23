@@ -11,9 +11,9 @@ public class VideoPacket implements Serializable {
     private long timestamp;
     private String output;
 
-    public VideoPacket(String name, long timestamp, String output) {
+    public VideoPacket(String name) {
         this.name = name;
-        this.timestamp = timestamp;
-        this.output = output;
+//        this.timestamp = timestamp;
+//        this.output = output;
     }
 }

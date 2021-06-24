@@ -265,7 +265,7 @@ public class MainActivity extends AppCompatActivity
                         e.printStackTrace();
                       }
                       PublicKey pubKey = kr.getPublic("public.der");
-
+//                      MessageList.add(msg);
                       if(digisign.VerifySignature(array, pubKey, yourBytes)){
                         MessageList.add(msg);
                       } else{
@@ -342,7 +342,7 @@ public class MainActivity extends AppCompatActivity
             PrivateKey privateKey = kr.getPrivate("private.der");
             byte[] signature = digisign.SignData(yourBytes, privateKey);
             String sign = java.util.Base64.getEncoder().encodeToString(signature);
-            socket.emit("messagedetection",m.getMessage(), Nickname, m.getTimestamp().toString(),sign,Chatroom);
+            socket.emit("messagedetection",m.getMessage(), m.getNickname(), m.getTimestamp().toString(),sign,Chatroom);
 
           } catch (Exception e) {
             e.printStackTrace();
